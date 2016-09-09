@@ -1,9 +1,9 @@
 # openssl
 Debian based image with openssl for ssl certificate generation.
 
-[Docker Image](https://hub.docker.com/r/wallies/openssl/)
+[![](https://images.microbadger.com/badges/version/wallies/openssl.svg)](http://microbadger.com/images/wallies/openssl "Get your own version badge on microbadger.com")
 
-[Image Layers](https://img.shields.io/imagelayers/image-size/wallies/openssl/latest.svg)
+[![](https://images.microbadger.com/badges/image/wallies/openssl.svg)](http://microbadger.com/images/wallies/openssl "Get your own image badge on microbadger.com")
 
 ## Build openssl image
 
