@@ -6,6 +6,6 @@ RUN pip install "elasticsearch-curator<4.0.0"
 
 USER nobody
 
-ENTRYPOINT ["/usr/bin/curator"]
+ENTRYPOINT ["/usr/local/bin/curator"]
 
 CMD ["--help"]
