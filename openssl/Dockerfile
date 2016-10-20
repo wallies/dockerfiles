@@ -6,8 +6,7 @@ LABEL Vendor="Wallies" \
       Name=openssl \
       Version=0.0.1
 
-ARG OPENSSL_VERSION
-ENV OPENSSL_VERSION ${OPENSSL_VERSION}
+ARG OPENSSL_VERSION 1.1.0b
 
 # default variables 
 ENV SIZE 4096
