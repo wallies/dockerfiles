@@ -1,4 +1,4 @@
-FROM alpine:edge
+FROM alpine:3.5
 MAINTAINER Wallies
 
 ENV UID=991 \
@@ -30,10 +30,10 @@ ARG NGINX_MODULES=" \
 
 ARG NGINX_3RD_PARTY_MODULES=" \
     --add-module=/tmp/headers-more-nginx-module \
-    --add-module=/tmp/ngx_brotli" \
+    --add-module=/tmp/ngx_brotli \
     --add-module=/tmp/nginx-auth-ldap"
 
-RUN echo "@commuedge https://nl.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
+RUN echo "@commuedge http://nl.alpinelinux.org/alpine/edge/community" >> /etc/apk/repositories \
  && NB_CORES=${BUILD_CORES-$(getconf _NPROCESSORS_CONF)} \
  && BUILD_DEPS=" \
     build-base \
@@ -67,7 +67,9 @@ RUN echo "@commuedge https://nl.alpinelinux.org/alpine/edge/community" >> /etc/a
     tini@commuedge \
  && cd /tmp && git clone https://github.com/bagder/libbrotli --depth=1 \
  && cd libbrotli && ./autogen.sh && ./configure && make -j ${NB_CORES} && make install \
- && cd /tmp && git clone https://github.com/kvspb/nginx-auth-ldap.git --depth=1 \
+ && cd /tmp && git clone https://github.com/google/ngx_brotli --depth=1 \
+ && cd ngx_brotli && git submodule update --init \
+ && cd /tmp && git clone https://github.com/itsoli/nginx-auth-ldap.git --depth=1 \
  && git clone https://boringssl.googlesource.com/boringssl --depth=1 \
  && git clone https://github.com/openresty/headers-more-nginx-module --depth=1 \
  && curl -sLo /usr/local/bin/ep https://github.com/kreuzwerker/envplate/releases/download/v0.0.8/ep-linux \
@@ -100,12 +102,12 @@ RUN echo "@commuedge https://nl.alpinelinux.org/alpine/edge/community" >> /etc/a
  && ./configure \
     --prefix=/etc/nginx \
     --sbin-path=/usr/sbin/nginx \
-    --with-cc-opt="-O3 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -Wno-deprecated-declarations -I ../boringssl/.openssl/include/" \" \
+    --with-cc-opt="-O3 -fPIE -fstack-protector-strong -Wformat -Werror=format-security -Wno-deprecated-declarations -I /tmp/boringssl/.openssl/include/" \
+    --with-ld-opt="-Wl,-Bsymbolic-functions -Wl,-z,relro -L /tmp/boringssl/.openssl/lib" \
     --http-log-path=/var/log/nginx/access.log \
     --error-log-path=/var/log/nginx/error.log \
     ${NGINX_MODULES} \
     ${NGINX_3RD_PARTY_MODULES} \
-    
  && make -j ${NB_CORES} && make install && make clean \
  && strip -s /usr/sbin/nginx \
  && apk del ${BUILD_DEPS} \

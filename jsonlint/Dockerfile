@@ -1,0 +1,12 @@
+FROM alpine:3.6
+
+MAINTAINER cam.parry@gmail.com
+
+LABEL Vendor="Wallies" \
+      Name=jsonlint \
+      Version=1.6.0
+
+RUN apk add --update nodejs nodejs-npm && \
+    rm /var/cache/apk/*
+
+RUN npm install -g jsonlint jsondiffpatch prettyjson json-minify
