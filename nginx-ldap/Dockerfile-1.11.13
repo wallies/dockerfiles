@@ -1,5 +1,6 @@
 FROM alpine:3.5
-MAINTAINER Wallies
+
+LABEL maintainer Wallies
 
 ENV UID=991 \
     GID=991 \

@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER Wallies cam.parry@gmail.com
+LABEL maintainer Wallies cam.parry@gmail.com
 
 LABEL Vendor="Wallies" \
       Name=openssl \

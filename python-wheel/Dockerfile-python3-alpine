@@ -1,0 +1,52 @@
+FROM alpine:3.6
+
+LABEL maintainer Wallies
+
+LABEL Vendor="Wallies" \
+      Name=python-nightly \
+      Version=1.0
+
+ENV WORKSPACE=/workspace \
+    SOURCES=/sources \
+    WHEELHOUSE=/wheelhouse \
+    PACKAGE_LIST_URL=''
+
+# ensure local python is preferred over distribution python
+ENV PATH /usr/local/bin:$PATH
+
+# http://bugs.python.org/issue19846
+# > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
+ENV LANG C.UTF-8
+
+ENV PKGS='python3 \
+          curl \
+          alpine-sdk \
+          python3-dev \
+          postgresql-dev \
+          libjpeg-turbo-dev \
+          zlib-dev \
+          libffi-dev \
+          libressl \
+          libressl-dev \
+          gcc \
+          musl-dev'
+
+# install ca-certificates so that HTTPS works consistently
+# the other runtime dependencies for Python are installed later
+RUN apk add --no-cache ca-certificates
+
+RUN apk add --no-cache $PKGS && \
+    curl https://bootstrap.pypa.io/get-pip.py | python3 && \
+    pip3 install --upgrade pip setuptools wheel requests requests-toolbelt && \
+    mkdir -p ${SOURCES} ${WHEELHOUSE}
+
+COPY build-wheel.py /usr/bin/build-wheel
+
+RUN chmod +x /usr/bin/build-wheel
+
+RUN curl -o /tmp/package_list.txt \
+-L ${PACKAGE_LIST_URL}
+
+WORKDIR ${SOURCES}
+
+ENTRYPOINT ["/usr/bin/build-wheel"]
