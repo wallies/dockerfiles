@@ -40,16 +40,28 @@ for f in "${files[@]}"; do
 
 	if [[ -z "$suite" ]]; then
 		suite=latest
+    (
+    set -x
+    docker build -t wallies/${base}:${suite} ${build_dir}
+    )
 	elif [[ "$suite" =~ "Dockerfile" ]]; then
 		suite=${suite#*Dockerfile-}
+    (
+    set -x
+    docker build -t wallies/${base}:${suite} -f ${image} ${build_dir}
+    )
 	fi
-  
-	(
-	set -x
-	docker build -t ${base}:${suite} ${build_dir}
-	)
 
 	echo "                       ---                                   "
-	echo "Successfully built ${base}:${suite} with context ${build_dir}"
+	echo "Successfully built wallies/${base}:${suite} with context ${build_dir}"
 	echo "                       ---                                   "
 done
+
+(
+set -x
+docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python
+)
+
+echo "                       ---                                   "
+echo "Successfully built wallies/python:nightly-alpine with context python"
+echo "
