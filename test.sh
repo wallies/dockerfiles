@@ -59,9 +59,10 @@ done
 
 (
 set -x
-docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python
+docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+if docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python; then
+  docker push wallies/python:nightly-alpine
+  echo "Successfully built and pushed"
+else 
+  echo "Build Failed"
 )
-
-echo "                       ---                                   "
-echo "Successfully built wallies/python:nightly-alpine with context python"
-echo "                       ---                                   "
