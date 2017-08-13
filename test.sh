@@ -29,32 +29,32 @@ unset IFS
 
 # build the changed dockerfiles
 for f in "${files[@]}"; do
-	if ! [[ -e "$f" ]]; then
-		continue
-	fi
-  
-	image=${f%Dockerfile}
-	base=${image%%\/*}
-	suite=${image##*\/}
-	build_dir=$(dirname $f)
+  if ! [[ -e "$f" ]]; then
+    continue
+  fi
 
-	if [[ -z "$suite" ]]; then
-		suite=latest
+  image=${f%Dockerfile}
+  base=${image%%\/*}
+  suite=${image##*\/}
+  build_dir=$(dirname $f)
+
+  if [[ -z "$suite" ]]; then
+    suite=latest
     (
     set -x
     docker build -t wallies/${base}:${suite} ${build_dir}
     )
-	elif [[ "$suite" =~ "Dockerfile" ]]; then
-		suite=${suite#*Dockerfile-}
+  elif [[ "$suite" =~ "Dockerfile" ]]; then
+    suite=${suite#*Dockerfile-}
     (
     set -x
     docker build -t wallies/${base}:${suite} -f ${image} ${build_dir}
     )
-	fi
+  fi
 
-	echo "                       ---                                   "
-	echo "Successfully built wallies/${base}:${suite} with context ${build_dir}"
-	echo "                       ---                                   "
+  echo "                       ---                                   "
+  echo "Successfully built wallies/${base}:${suite} with context ${build_dir}"
+  echo "                       ---                                   "
 done
 
 (
@@ -64,4 +64,4 @@ docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpin
 
 echo "                       ---                                   "
 echo "Successfully built wallies/python:nightly-alpine with context python"
-echo "
+echo "                       ---                                   "
