@@ -65,4 +65,5 @@ if docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-al
   echo "Successfully built and pushed"
 else 
   echo "Build Failed"
+fi
 )
