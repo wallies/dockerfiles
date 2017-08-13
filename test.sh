@@ -57,13 +57,12 @@ for f in "${files[@]}"; do
   echo "                       ---                                   "
 done
 
-(
-set -x
-docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
-if docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python; then
-  docker push wallies/python:nightly-alpine
-  echo "Successfully built and pushed"
-else 
-  echo "Build Failed"
+if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+  docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+  if "docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python"; then
+    docker push wallies/python:nightly-alpine
+    echo "Successfully built and pushed"
+  else 
+    echo "Build Failed"
 fi
-)
+
