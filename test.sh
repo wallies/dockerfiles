@@ -64,5 +64,6 @@ if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; th
     echo "Successfully built and pushed"
   else 
     echo "Build Failed"
+  fi
 fi
 
