@@ -367,7 +367,7 @@ def parse_opts():
 
     pypi_group = parser.add_argument_group()
     pypi_group.add_argument('-u', '--username', help='pypi repository username',
-                            default=getenv('PYPI_USERNAME', 'iixpack'))
+                            default=getenv('PYPI_USERNAME', 'pypi_username'))
     pypi_group.add_argument('-p', '--password', help='pypi repository password', default=getenv('PYPI_PASSWORD', None))
     pypi_group.add_argument('-H', '--host', help='pypi index host', default=getenv('PYPI_URL', 'pypi.python.org'))
 
