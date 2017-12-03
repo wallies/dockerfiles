@@ -55,6 +55,13 @@ for f in "${files[@]}"; do
   echo "                       ---                                   "
   echo "Successfully built wallies/${base}:${suite} with context ${build_dir}"
   echo "                       ---                                   "
+
+  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
+    docker login -u $DOCKER_USER -p $DOCKER_PASS
+    docker push wallies/${base}:${suite}
+    echo "Successfully built and pushed"
+    fi
+  fi
 done
 
 if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
