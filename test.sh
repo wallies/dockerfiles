@@ -60,7 +60,6 @@ for f in "${files[@]}"; do
     docker login -u $DOCKER_USER -p $DOCKER_PASS
     docker push wallies/${base}:${suite}
     echo "Successfully built and pushed"
-    fi
   fi
 done
 
