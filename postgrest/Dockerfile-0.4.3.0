@@ -1,0 +1,79 @@
+FROM alpine:edge as build-base
+
+ARG POSTGREST_VERSION=0.4.3.0
+
+ARG PKGS='ghc \
+          cabal \
+          linux-headers \
+          zlib-dev \
+          musl-dev \
+          gmp-dev \
+          curl \
+          libpq \
+          ca-certificates \
+          xz-dev \
+          postgresql-libs \
+          postgresql-dev \
+          postgresql \
+          zlib \
+          zlib-dev'
+
+# Install cabal, stack and ghc to build postrest from source
+RUN apk upgrade --update --no-cache && \
+    apk add --update --no-cache $PKGS && \
+    export PATH=${PATH}:/root/.local/bin:/root/.cabal/bin && \
+    curl -sSL https://get.haskellstack.org/ | sh
+
+# Install postgrest
+RUN cd /tmp && \
+    curl -sLo postgrest-${POSTGREST_VERSION}.tar.gz https://github.com/begriffs/postgrest/archive/v${POSTGREST_VERSION}.tar.gz && \
+    tar -xvf postgrest-${POSTGREST_VERSION}.tar.gz && \
+    cd postgrest-${POSTGREST_VERSION} && \
+    stack config set system-ghc --global true && \
+    stack build --fast -j1 --copy-bins
+
+FROM alpine:3.6
+
+# Permissions, set the linux user id and group id
+ARG CONTAINER_UID=1000
+ARG CONTAINER_GID=1000
+
+ENV CONTAINER_USER=postgrest \
+    CONTAINER_GROUP=postgrest \
+    PGRST_DB_URI= \
+    PGRST_DB_SCHEMA=public \
+    PGRST_DB_ANON_ROLE= \
+    PGRST_DB_POOL=100 \
+    PGRST_SERVER_HOST=*4 \
+    PGRST_SERVER_PORT=3000 \
+    PGRST_SERVER_PROXY_URI= \
+    PGRST_JWT_SECRET= \
+    PGRST_SECRET_IS_BASE64=false \
+    PGRST_JWT_AUD= \
+    PGRST_MAX_ROWS= \
+    PGRST_PRE_REQUEST=
+
+COPY --from=build-base /root/.local/bin/postgrest /usr/local/bin/postgrest
+
+# Add User
+RUN mkdir -p /opt/postgrest && \
+    addgroup -g $CONTAINER_GID $CONTAINER_GROUP && \
+    adduser -u $CONTAINER_UID -G $CONTAINER_GROUP -h /opt/postgrest -s /bin/sh -S $CONTAINER_USER
+
+RUN apk update && \
+    apk add libpq gmp su-exec tini curl && \
+    # Network fix
+    echo 'hosts: files mdns4_minimal [NOTFOUND=return] dns mdns4' >> /etc/nsswitch.conf && \
+    curl https://raw.githubusercontent.com/vishnubob/wait-for-it/master/wait-for-it.sh -o /usr/bin/wait-for-it && \
+    mkdir -p /opt/postgrest && \
+    chown -R $CONTAINER_USER:$CONTAINER_GROUP /usr/local/bin/postgrest && \
+    apk del curl && \
+    rm -f /var/cache/apk/*
+
+COPY postgrest.conf /etc/postgrest.conf
+
+EXPOSE 3000
+
+USER postgrest
+
+ENTRYPOINT ["/sbin/tini","--","/usr/local/bin/postgrest", "/etc/postgrest.conf"]
