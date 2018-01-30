@@ -1,4 +1,4 @@
-FROM alpine:3.6
+FROM alpine:3.7
 
 LABEL maintainer Wallies cam.parry@gmail.com
 
@@ -26,8 +26,10 @@ RUN set -ex \
 		tar \
 		git \
 		xz \
+	\
 	&& mkdir -p /usr/src/python \
 	&& git clone https://github.com/python/cpython.git /usr/src/python \
+	\
 	&& apk add --no-cache --virtual .build-deps  \
 		bzip2-dev \
 		coreutils \
@@ -55,23 +57,25 @@ RUN set -ex \
 	\
 	&& cd /usr/src/python \
 	&& gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
-	&& ./configure \
-		--build="$gnuArch" \
-		--enable-loadable-sqlite-extensions \
-		--enable-shared \
-		--with-system-expat \
-		--with-system-ffi \
-		--without-ensurepip \
-	&& make -j "$(nproc)" \
+  && ./configure \
+    --build="$gnuArch" \
+    --enable-loadable-sqlite-extensions \
+    --enable-shared \
+    --with-system-expat \
+    --with-system-ffi \
+    --without-ensurepip \
+  && make -j "$(nproc)" \
+# set thread stack size to 1MB so we don't segfault before we hit sys.getrecursionlimit()
+# https://github.com/alpinelinux/aports/commit/2026e1259422d4e0cf92391ca2d3844356c649d0
+    EXTRA_CFLAGS="-DTHREAD_STACK_SIZE=0x100000" \
 	&& make install \
 	\
-	&& runDeps="$( \
-		scanelf --needed --nobanner --recursive /usr/local \
-			| awk '{ gsub(/,/, "\nso:", $2); print "so:" $2 }' \
-			| sort -u \
-			| xargs -r apk info --installed \
-			| sort -u \
-	)" \
+  && runDeps="$( \
+    scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
+      | tr ',' '\n' \
+      | sort -u \
+      | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+  )" \
 	&& apk add --virtual .python-rundeps $runDeps \
 	&& apk del .build-deps \
 	\
