@@ -8,6 +8,7 @@ LABEL Vendor="Wallies" \
 
 # ensure local python is preferred over distribution python
 ENV PATH /usr/local/bin:$PATH
+ENV PYTHON_VERSION 3.7.0b1
 
 # http://bugs.python.org/issue19846
 # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
@@ -27,8 +28,10 @@ RUN set -ex \
 		git \
 		xz \
 	\
+	&& wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
 	&& mkdir -p /usr/src/python \
-	&& git clone https://github.com/python/cpython.git /usr/src/python \
+	&& tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
+        && rm python.tar.xz \
 	\
 	&& apk add --no-cache --virtual .build-deps  \
 		bzip2-dev \
