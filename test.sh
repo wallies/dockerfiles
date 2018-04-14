@@ -57,7 +57,7 @@ for f in "${files[@]}"; do
   echo "                       ---                                   "
 
   if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    docker login -u $DOCKER_USER -p $DOCKER_PASS
+    echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin
     docker push wallies/${base}:${suite}
     echo "Successfully built and pushed"
   fi
