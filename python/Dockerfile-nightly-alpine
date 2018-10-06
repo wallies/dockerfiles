@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.8
 
 LABEL maintainer Wallies cam.parry@gmail.com
 
@@ -35,15 +35,17 @@ RUN set -ex \
 		coreutils \
 		dpkg-dev dpkg \
 		expat-dev \
+		findutils \
 		gcc \
 		gdbm-dev \
 		libc-dev \
 		libffi-dev \
+		libnsl-dev \
+		libressl-dev \
+		libtirpc-dev \
 		linux-headers \
 		make \
 		ncurses-dev \
-	        openssl \
-                openssl-dev \
 		pax-utils \
 		readline-dev \
 		sqlite-dev \
@@ -57,26 +59,24 @@ RUN set -ex \
 	\
 	&& cd /usr/src/python \
 	&& gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
-  && ./configure \
-    --build="$gnuArch" \
-    --enable-loadable-sqlite-extensions \
-    --enable-shared \
-    --with-system-expat \
-    --with-system-ffi \
-    --without-ensurepip \
-  && make -j "$(nproc)" \
+        && ./configure \
+            --build="$gnuArch" \
+            --enable-loadable-sqlite-extensions \
+            --enable-shared \
+            --with-system-expat \
+            --with-system-ffi \
+            --without-ensurepip \
+        && make -j "$(nproc)" \
 # set thread stack size to 1MB so we don't segfault before we hit sys.getrecursionlimit()
 # https://github.com/alpinelinux/aports/commit/2026e1259422d4e0cf92391ca2d3844356c649d0
-    EXTRA_CFLAGS="-DTHREAD_STACK_SIZE=0x100000" \
+		EXTRA_CFLAGS="-DTHREAD_STACK_SIZE=0x100000" \
 	&& make install \
 	\
-  && runDeps="$( \
-    scanelf --needed --nobanner --format '%n#p' --recursive /usr/local \
-      | tr ',' '\n' \
-      | sort -u \
-      | awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
-  )" \
-	&& apk add --virtual .python-rundeps $runDeps \
+	&& find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec scanelf --needed --nobanner --format '%n#p' '{}' ';' \
+		| tr ',' '\n' \
+		| sort -u \
+		| awk 'system("[ -e /usr/local/lib/" $1 " ]") == 0 { next } { print "so:" $1 }' \
+		| xargs -rt apk add --no-cache --virtual .python-rundeps \
 	&& apk del .build-deps \
 	\
 	&& find /usr/local -depth \
@@ -85,7 +85,9 @@ RUN set -ex \
 			-o \
 			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
 		\) -exec rm -rf '{}' + \
-	&& rm -rf /usr/src/python
+        && rm -rf /usr/src/python \
+	\
+        && python3 --version
 
 # make some useful symlinks that are expected to exist
 RUN cd /usr/local/bin \
@@ -99,11 +101,7 @@ ENV PYTHON_PIP_VERSION 18.0
 
 RUN set -ex; \
 	\
-	apk add --no-cache --virtual .fetch-deps libressl; \
-	\
 	wget -O get-pip.py 'https://bootstrap.pypa.io/get-pip.py'; \
-	\
-	apk del .fetch-deps; \
 	\
 	python get-pip.py \
 		--disable-pip-version-check \
@@ -118,6 +116,6 @@ RUN set -ex; \
 			-o \
 			\( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
 		\) -exec rm -rf '{}' +; \
-	rm -f get-pip.py
+        rm -f get-pip.py
 
 CMD ["python3"]
