@@ -106,7 +106,6 @@ RUN set -ex; \
 	python get-pip.py \
 		--disable-pip-version-check \
 		--no-cache-dir \
-		-c <(echo 'pip==18.0') \
 	; \
 	pip --version; \
 	\
