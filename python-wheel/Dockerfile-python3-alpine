@@ -44,8 +44,8 @@ COPY build-wheel.py /usr/bin/build-wheel
 
 RUN chmod +x /usr/bin/build-wheel
 
-RUN curl -o /tmp/package_list.txt \
--L ${PACKAGE_LIST_URL}
+#RUN curl -o /tmp/package_list.txt \
+#-L ${PACKAGE_LIST_URL}
 
 WORKDIR ${SOURCES}
 
