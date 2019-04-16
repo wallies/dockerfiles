@@ -1,4 +1,4 @@
-FROM alpine:3.8
+FROM alpine:3.9
 
 LABEL maintainer Wallies cam.parry@gmail.com
 
@@ -41,7 +41,7 @@ RUN set -ex \
 		libc-dev \
 		libffi-dev \
 		libnsl-dev \
-		libressl-dev \
+		openssl-dev \
 		libtirpc-dev \
 		linux-headers \
 		make \

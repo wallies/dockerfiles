@@ -1,4 +1,4 @@
-FROM alpine:3.6
+FROM alpine:3.9
 
 LABEL maintainer Wallies
 
@@ -26,8 +26,8 @@ ENV PKGS='python3 \
           libjpeg-turbo-dev \
           zlib-dev \
           libffi-dev \
-          libressl \
-          libressl-dev \
+          openssl \
+          openssl-dev \
           gcc \
           musl-dev'
 
