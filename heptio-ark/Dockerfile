@@ -1,8 +1,8 @@
-FROM alpine:3.7
+FROM alpine:3.10
 
 ENV UID=991 \
     GID=991 \
-    HEPTIO_ARK_VERSION=0.6.0
+    HEPTIO_VELERO_VERSION=1.0.0
 
 RUN apk add --update --no-cache tar curl su-exec tini && \
     curl -sLo /tmp/ark.tar.gz "https://github.com/heptio/ark/releases/download/v${HEPTIO_ARK_VERSION}/ark-v${HEPTIO_ARK_VERSION}-linux-amd64.tar.gz" && \

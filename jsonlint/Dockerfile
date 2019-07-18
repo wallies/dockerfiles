@@ -1,10 +1,10 @@
-FROM alpine:3.6
+FROM alpine:3.10
 
 LABEL maintainer cam.parry@gmail.com
 
 LABEL Vendor="Wallies" \
       Name=jsonlint \
-      Version=1.6.0
+      Version=1.6.3
 
 RUN apk add --update nodejs nodejs-npm && \
     rm /var/cache/apk/*
