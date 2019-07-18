@@ -5,7 +5,7 @@ ENV UID=991 \
     HEPTIO_VELERO_VERSION=1.0.0
 
 RUN apk add --update --no-cache tar curl su-exec tini && \
-    curl -sLo /tmp/ark.tar.gz "https://github.com/heptio/ark/releases/download/v${HEPTIO_ARK_VERSION}/ark-v${HEPTIO_ARK_VERSION}-linux-amd64.tar.gz" && \
+    curl -sLo /tmp/ark.tar.gz "https://github.com/heptio/velero/releases/download/v${HEPTIO_VELERO_VERSION}/velero-v${HEPTIO_VELERO_VERSION}-linux-amd64.tar.gz" && \
     tar -xvf /tmp/ark.tar.gz -C /usr/local/bin/ && \
     rm /tmp/ark.tar.gz /var/cache/apk/* && \
     apk del curl tar
