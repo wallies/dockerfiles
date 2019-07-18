@@ -6,7 +6,7 @@ ENV UID=991 \
 
 RUN apk add --update --no-cache tar curl su-exec tini && \
     curl -sLo /tmp/velero.tar.gz "https://github.com/heptio/velero/releases/download/v${HEPTIO_VELERO_VERSION}/velero-v${HEPTIO_VELERO_VERSION}-linux-amd64.tar.gz" && \
-    tar -xvf /tmp/velero.tar.gz -C /usr/local/bin/ && \
+    tar -xvf /tmp/velero.tar.gz --strip 1 -C /usr/local/bin/ && \
     rm /tmp/velero.tar.gz && \
     apk del curl tar
 
