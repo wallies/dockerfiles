@@ -6,7 +6,7 @@ ENV UID=991 \
     GID=991 \
     SQL_LINT_VERSION=0.0.11
 
-RUN apk add --update --no-cache curl su-exec tini && \
+RUN apk add --update --no-cache curl && \
     curl -sLo /usr/local/bin/sql-lint "https://github.com//joereynolds/sql-lint/releases/download/v${HEPTIO_VELERO_VERSION}/sql-lint-linux" && \
     apk del curl
 
@@ -18,5 +18,4 @@ RUN chmod +x /usr/local/bin/sql-lint && \
 
 USER sqllint
 
-ENTRYPOINT ["/sbin/tini", "--"]
-CMD ["/usr/local/bin/sql-lint"]
+ENTRYPOINT ["/usr/local/bin/sql-lint"]
