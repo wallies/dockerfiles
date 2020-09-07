@@ -4,7 +4,7 @@ safety
 mock
 mypy
 typed-ast
-py==1.5.4
+py
 pylint
 pytest
 pytest-cov

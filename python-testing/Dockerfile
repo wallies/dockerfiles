@@ -1,4 +1,4 @@
-FROM python:3.7-alpine3.9
+FROM python:3.7-alpine3.11
 
 ENV SOURCE=/source \
     OUTPUT=/output \
@@ -24,7 +24,7 @@ RUN addgroup -g ${GID} pytester && \
 RUN apk --update-cache add hub --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     && apk add --update-cache $(cat /var/run/runtime-deps-pkgs) \
     && wget https://github.com/stedolan/jq/releases/latest/download/jq-linux64 -O /usr/local/bin/jq \
-    && pip3 install -U setuptools requests requests-toolbelt \
+    && pip3 install -U pip setuptools requests requests-toolbelt \
     && pip3 install $(cat /var/run/runtime-deps-pip)
 
 RUN mkdir -p $SOURCE $OUTPUT /src/tasks && \

@@ -8,10 +8,12 @@ e2fsprogs
 e2fsprogs-extra
 freetype
 gcc
+git
 iptables
 libffi
 libffi-dev
 libpng
+openssh-client
 openssl
 openssl-dev
 libxml2-dev
