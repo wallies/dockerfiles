@@ -1,58 +1,92 @@
-FROM python:3.8-buster as base
+FROM nvidia/cuda:11.3.0-runtime-ubuntu20.04
 
-# Install NVIDIA/CUDA support based on:
-# https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/11.3.0/ubuntu20.04-x86_64/base/Dockerfile
+# ensure local python is preferred over distribution python
+ENV PATH /usr/local/bin:$PATH
 
+# http://bugs.python.org/issue19846
+# > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
+ENV LANG C.UTF-8
+
+# extra dependencies (over what buildpack-deps already includes)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gnupg2 curl ca-certificates && \
-    curl -fsSL https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub | apt-key add - && \
-    echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
-    echo "deb https://developer.download.nvidia.com/compute/machine-learning/repos/ubuntu2004/x86_64 /" > /etc/apt/sources.list.d/nvidia-ml.list && \
-    apt-get purge --autoremove -y curl \
+        libbluetooth-dev \
+        tk-dev \
+        uuid-dev \
     && rm -rf /var/lib/apt/lists/*
 
-ENV CUDA_VERSION 11.3.0
+ENV GPG_KEY E3FF2839C048B25C084DEBE9B26995E310250568
+ENV PYTHON_VERSION 3.8.9
 
-# For libraries in the cuda-compat-* package: https://docs.nvidia.com/cuda/eula/index.html#attachment-a
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    cuda-cudart-11-3=11.3.58-1 \
-    cuda-compat-11-3 \
-    && ln -s cuda-11.3 /usr/local/cuda && \
-    rm -rf /var/lib/apt/lists/*
+RUN set -ex \
+    \
+    && wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz" \
+    && wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc" \
+    && export GNUPGHOME="$(mktemp -d)" \
+    && gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$GPG_KEY" \
+    && gpg --batch --verify python.tar.xz.asc python.tar.xz \
+    && { command -v gpgconf > /dev/null && gpgconf --kill all || :; } \
+    && rm -rf "$GNUPGHOME" python.tar.xz.asc \
+    && mkdir -p /usr/src/python \
+    && tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
+    && rm python.tar.xz \
+    \
+    && cd /usr/src/python \
+    && gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
+    && ./configure \
+        --build="$gnuArch" \
+        --enable-loadable-sqlite-extensions \
+        --enable-optimizations \
+        --enable-option-checking=fatal \
+        --enable-shared \
+        --with-system-expat \
+        --with-system-ffi \
+        --without-ensurepip \
+    && make -j "$(nproc)" \
+    && make install \
+    && rm -rf /usr/src/python \
+    \
+    && find /usr/local -depth \
+        \( \
+            \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+            -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
+            -o \( -type f -a -name 'wininst-*.exe' \) \
+        \) -exec rm -rf '{}' + \
+    \
+    && ldconfig \
+    \
+    && python3 --version
 
-# Required for nvidia-docker v1
-RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf \
-    && echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
+# make some useful symlinks that are expected to exist
+RUN cd /usr/local/bin \
+    && ln -s idle3 idle \
+    && ln -s pydoc3 pydoc \
+    && ln -s python3 python \
+    && ln -s python3-config python-config
 
-ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
-ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
+# if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
+ENV PYTHON_PIP_VERSION 21.0.1
+# https://github.com/pypa/get-pip
+ENV PYTHON_GET_PIP_URL https://github.com/pypa/get-pip/raw/29f37dbe6b3842ccd52d61816a3044173962ebeb/public/get-pip.py
+ENV PYTHON_GET_PIP_SHA256 e03eb8a33d3b441ff484c56a436ff10680479d4bd14e59268e67977ed40904de
 
-# nvidia-container-runtime
-ENV NVIDIA_VISIBLE_DEVICES all
-ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
-ENV NVIDIA_REQUIRE_CUDA "cuda>=11.3 brand=tesla,driver>=418,driver<419 brand=tesla,driver>=440,driver<441 driver>=450"
+RUN set -ex; \
+    \
+    wget -O get-pip.py "$PYTHON_GET_PIP_URL"; \
+    echo "$PYTHON_GET_PIP_SHA256 *get-pip.py" | sha256sum --check --strict -; \
+    \
+    python get-pip.py \
+        --disable-pip-version-check \
+        --no-cache-dir \
+        "pip==$PYTHON_PIP_VERSION" \
+    ; \
+    pip --version; \
+    \
+    find /usr/local -depth \
+        \( \
+            \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+            -o \
+            \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+        \) -exec rm -rf '{}' +; \
+    rm -f get-pip.py
 
-# Install NVIDIA/CUDA runtime support based on:
-# https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/11.3.0/ubuntu20.04-x86_64/runtime/Dockerfile
-
-ENV NCCL_VERSION 2.9.6
-
-RUN apt-get update
-RUN apt install -y software-properties-common && \
-    add-apt-repository ppa:ubuntu-toolchain-r/test && \
-    apt-get update && \
-    apt install -y gcc-10
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    cuda-libraries-11-3=11.3.0-1 \
-    libnpp-11-3=11.3.3.44-1 \
-    cuda-nvtx-11-3=11.3.58-1 \
-    libcublas-11-3=11.4.2.10064-1 \
-    libcusparse-11-3=11.5.0.58-1 \
-    libnccl2=$NCCL_VERSION-1+cuda11.3 && \
-    apt-mark hold libnccl2 && \
-    rm -rf /var/lib/apt/lists/*
-
-
-# apt from auto upgrading the cublas package. See https://gitlab.com/nvidia/container-images/cuda/-/issues/88
-RUN apt-mark hold libcublas-11-3 libnccl2
+CMD ["python3"]
