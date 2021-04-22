@@ -37,10 +37,10 @@ ENV NVIDIA_REQUIRE_CUDA "cuda>=11.3 brand=tesla,driver>=418,driver<419 brand=tes
 
 ENV NCCL_VERSION 2.9.6
 
-RUN sudo apt install software-properties-common && \
+RUN apt install software-properties-common && \
     add-apt-repository ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
-    sudo apt --fix-broken install && \
+    apt --fix-broken install && \
     apt install gcc-10
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
