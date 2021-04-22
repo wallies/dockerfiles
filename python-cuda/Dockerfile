@@ -20,15 +20,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && ln -s cuda-11.3 /usr/local/cuda && \
     rm -rf /var/lib/apt/lists/*
 
-
 # Required for nvidia-docker v1
 RUN echo "/usr/local/nvidia/lib" >> /etc/ld.so.conf.d/nvidia.conf \
     && echo "/usr/local/nvidia/lib64" >> /etc/ld.so.conf.d/nvidia.conf
 
 ENV PATH /usr/local/nvidia/bin:/usr/local/cuda/bin:${PATH}
 ENV LD_LIBRARY_PATH /usr/local/nvidia/lib:/usr/local/nvidia/lib64
-
-COPY NGC-DL-CONTAINER-LICENSE /
 
 # nvidia-container-runtime
 ENV NVIDIA_VISIBLE_DEVICES all
