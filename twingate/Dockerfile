@@ -9,7 +9,7 @@ RUN echo "deb [trusted=true] https://packages.twingate.com/apt/ /" | tee /etc/ap
 RUN apt-get update -yq && \
     apt-get install -yd twingate
 
-RUN cp /var/cache/apt/archives/twingate_0.49.0_amd64.deb /tmp/ && \
+RUN cp /var/cache/apt/archives/twingate_*_amd64.deb /tmp/ && \
     ls -l /tmp/
 
 
