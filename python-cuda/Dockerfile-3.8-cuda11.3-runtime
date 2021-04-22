@@ -41,7 +41,6 @@ RUN apt-get update
 RUN apt install -y software-properties-common && \
     add-apt-repository ppa:ubuntu-toolchain-r/test && \
     apt-get update && \
-    apt --fix-broken install && \
     apt install -y gcc-10
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
