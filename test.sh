@@ -56,20 +56,15 @@ for f in "${files[@]}"; do
   echo "Successfully built wallies/${base}:${suite} with context ${build_dir}"
   echo "                       ---                                   "
 
-  if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-    echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin
-    docker push wallies/${base}:${suite}
-    echo "Successfully built and pushed"
-  fi
+  docker push wallies/${base}:${suite}
+  echo "Successfully built and pushed"
+
 done
 
-if [ "$TRAVIS_BRANCH" == "master" ] && [ "$TRAVIS_PULL_REQUEST" == "false" ]; then
-  echo "$DOCKER_PASS" | docker login -u $DOCKER_USER --password-stdin
-  if docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python; then
-    docker push wallies/python:nightly-alpine
-    echo "Successfully built and pushed"
-  else 
-    echo "Build Failed"
-  fi
+if docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python; then
+  docker push wallies/python:nightly-alpine
+  echo "Successfully built and pushed"
+else 
+  echo "Build Failed"
 fi
 
