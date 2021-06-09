@@ -29,7 +29,7 @@ RUN apk --update-cache add hub --repository http://dl-cdn.alpinelinux.org/alpine
 
 RUN mkdir -p $SOURCE $OUTPUT /src/tasks && \
     chown -R pytester:pytester $SOURCE $OUTPUT /src /tmp \
-    /usr/local/lib/python3.7 /usr/local/bin /usr/bin/ssh && \
+    /usr/local/lib/python3.9 /usr/local/bin /usr/bin/ssh && \
     chmod +x /usr/local/bin/jq 
 
 WORKDIR $SOURCE
