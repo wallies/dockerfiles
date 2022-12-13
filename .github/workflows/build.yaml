@@ -3,9 +3,9 @@ name: Build
 on:
   push:
     branches:
-      - master
+      - main
   workflow_dispatch:
-    branches: [ master ]
+    branches: [ main ]
 
 permissions:  # added using https://github.com/step-security/secure-workflows
   contents: read
