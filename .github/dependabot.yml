@@ -5,3 +5,53 @@ updates:
   directory: "/"
   schedule:
     interval: "weekly"
+
+- package-ecosystem: docker
+  directory: /python-cuda
+  schedule:
+    interval: weekly
+
+- package-ecosystem: docker
+  directory: /dockercleanup
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /heptio-ark
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /jsonlint
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /lint-validator
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /mypy
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /openssl
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /pypicloud
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /python-testing
+  schedule:
+    interval: monthly
+
+- package-ecosystem: docker
+  directory: /sqllint
+  schedule:
+    interval: monthly
