@@ -1,4 +1,4 @@
-FROM python:3.9-alpine3.12
+FROM python:3.9-alpine3.12@sha256:7f73901e568630443fc50e358b76603492e89c9bf330caf689e856a018f135f0
 
 ENV SOURCE=/source \
     OUTPUT=/output \

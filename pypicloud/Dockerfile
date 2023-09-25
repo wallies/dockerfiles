@@ -1,4 +1,4 @@
-FROM alpine:3.5
+FROM alpine:3.5@sha256:66952b313e51c3bd1987d7c4ddf5dba9bc0fb6e524eed2448fa660246b3e76ec
 
 ARG NGINX_CONF_DIR=/etc/nginx
 ARG PYPICLOUD_CONF_DIR=/etc/pypicloud
