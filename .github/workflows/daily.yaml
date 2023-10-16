@@ -39,6 +39,10 @@ jobs:
           base="${image%%/*}"
           suite="${image##*/}"
           build_dir=$(dirname "$dockerfile")
+          echo "image: ${image}"
+          echo "base: ${base}"
+          echo "suite: ${suite}"
+          echo "directory: ${build_dir}"
 
           if [[ -z "$suite" ]]; then
             suite=latest
