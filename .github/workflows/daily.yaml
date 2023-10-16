@@ -1,0 +1,47 @@
+name: Build and Push Dockerfiles
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # Schedule to run at 2:00 AM UTC daily
+
+jobs:
+  build_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker
+      run: docker --version
+
+    - name: Build and Push Dockerfiles in python-cuda directory
+      run: |
+        cd python-cuda
+        for dockerfile in Dockerfile-*; do
+          image="${dockerfile%Dockerfile-*}"
+          base="${image%%/*}"
+          suite="${image##*/}"
+          build_dir=$(dirname "$dockerfile")
+
+          if [[ -z "$suite" ]]; then
+            suite=latest
+          elif [[ "$suite" =~ "Dockerfile" ]]; then
+            suite="${suite#Dockerfile-}"
+          fi
+
+          docker_tag="wallies/${base}:${suite}"
+
+          (
+            set -x
+            docker build -t "$docker_tag" -f "$dockerfile" .
+            echo "Successfully built $docker_tag with context $build_dir"
+          )
+
+          (
+            set -x
+            docker push "$docker_tag"
+            echo "Successfully built and pushed $docker_tag"
+          )
+        done
+      if: github.event_name == 'schedule'
