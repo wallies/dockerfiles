@@ -60,4 +60,3 @@ jobs:
             echo "Successfully built and pushed $docker_tag"
           )
         done
-      if: github.event_name == 'schedule'
