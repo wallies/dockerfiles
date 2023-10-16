@@ -61,10 +61,3 @@ for f in "${files[@]}"; do
 
 done
 
-if docker build -t wallies/python:nightly-alpine -f python/Dockerfile-nightly-alpine python; then
-  docker push wallies/python:nightly-alpine
-  echo "Successfully built and pushed"
-else 
-  echo "Build Failed"
-fi
-
