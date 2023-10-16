@@ -38,15 +38,13 @@ jobs:
           image="${dockerfile%Dockerfile-*}"
           base="${image%%/*}"
           suite="${image##*/}"
-          build_dir=$(dirname "$dockerfile")
+          build_dir=python-cuda
           echo "image: ${image}"
           echo "base: ${base}"
           echo "suite: ${suite}"
           echo "directory: ${build_dir}"
 
-          if [[ -z "$suite" ]]; then
-            suite=latest
-          elif [[ "$suite" =~ "Dockerfile" ]]; then
+          if [[ "$suite" =~ "Dockerfile" ]]; then
             suite="${suite#Dockerfile-}"
           fi
 
