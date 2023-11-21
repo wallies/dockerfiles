@@ -3,26 +3,16 @@ set -e
 set -o pipefail
 
 cd python-cuda
-for dockerfile in Dockerfile-*; do
-  image="${dockerfile%Dockerfile-*}"
-  base="${image%%/*}"
-  suite="${image##*/}"
-  build_dir=python-cuda
-  echo "image: ${image}"
-  echo "base: ${base}"
-  echo "suite: ${suite}"
-  echo "directory: ${build_dir}"
-
-  if [[ "$suite" =~ "Dockerfile" ]]; then
-    suite="${suite#Dockerfile-}"
-  fi
-  
-  docker_tag="wallies/${base}:${suite}"
+for file in Dockerfile-*; do
+  echo "Building Dockerfile: $file"
+  tag=${file#*Dockerfile-}
+  echo "Tag: ${tag}"
+  docker_tag="wallies/python-cuda:${tag}"
 
   (
      set -x
-     docker build -t "$docker_tag" -f "$dockerfile" .
-     echo "Successfully built $docker_tag with context $build_dir"
+     docker build -t "$docker_tag" -f "$file" .
+     echo "Successfully built $docker_tag"
   )
 
   (
