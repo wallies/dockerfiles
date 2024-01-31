@@ -75,7 +75,6 @@ RUN set -eux; \
     nproc="$(nproc)"; \
     EXTRA_CFLAGS="$(dpkg-buildflags --get CFLAGS)"; \
     LDFLAGS="$(dpkg-buildflags --get LDFLAGS)"; \
-    LDFLAGS="${LDFLAGS:--Wl},--strip-all"; \
     make -j "$nproc" \
         "EXTRA_CFLAGS=${EXTRA_CFLAGS:-}" \
         "LDFLAGS=${LDFLAGS:-}" \
@@ -92,6 +91,12 @@ RUN set -eux; \
     ; \
     make install; \
     \
+# enable GDB to load debugging data: https://github.com/docker-library/python/pull/701
+    bin="$(readlink -ve /usr/local/bin/python3)"; \
+    dir="$(dirname "$bin")"; \
+    mkdir -p "/usr/share/gdb/auto-load/$dir"; \
+    cp -vL Tools/gdb/libpython.py "/usr/share/gdb/auto-load/$bin-gdb.py"; \
+    \
     cd /; \
     rm -rf /usr/src/python; \
     \
@@ -103,19 +108,6 @@ RUN set -eux; \
     ; \
     \
     ldconfig; \
-    \
-    apt-mark auto '.*' > /dev/null; \
-    apt-mark manual $savedAptMark; \
-    find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec ldd '{}' ';' \
-        | awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) { next }; gsub("^/(usr/)?", "", so); printf "*%s\n", so }' \
-        | sort -u \
-        | xargs -r dpkg-query --search \
-        | cut -d: -f1 \
-        | sort -u \
-        | xargs -r apt-mark manual \
-    ; \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
-    rm -rf /var/lib/apt/lists/*; \
     \
     python3 --version
 
@@ -150,5 +142,6 @@ RUN set -eux; \
     rm -f get-pip.py; \
     \
     pip --version
+
 
 CMD ["python3"]
